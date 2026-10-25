@@ -45,22 +45,22 @@ enum EAuthSessionResponse
 
 methodmap INetChannel{
 	public bool IsTimingOut(){
-		return SDKCall(g_hSDKCall_IsTimingOut, view_as<Address>(this));
+		return SDKCall(g_hSDKCall_IsTimingOut, view_as<Address>(view_as<int>(this)));
 	}
 }
 
 methodmap CBaseClient
 {
 	public INetChannel GetNetChannel(){
-		return view_as<INetChannel>(SDKCall(g_hSDKCall_GetNetChannel, view_as<Address>(this)));
+		return view_as<INetChannel>(SDKCall(g_hSDKCall_GetNetChannel, view_as<Address>(view_as<int>(this))));
 	}
 
 	public void Disconnect(const char[] reason){
-		SDKCall(g_hSDKCall_Disconnect, view_as<Address>(this), reason);
+		SDKCall(g_hSDKCall_Disconnect, view_as<Address>(view_as<int>(this)), reason);
 	}
 
 	public void GetClientName(char[] name, int maxlen){
-		SDKCall(g_hSDKCall_GetClientName, view_as<Address>(this), name, maxlen);
+		SDKCall(g_hSDKCall_GetClientName, view_as<Address>(view_as<int>(this)), name, maxlen);
 	}
 }
 
@@ -113,7 +113,7 @@ MRESReturn DTR_OnValidateAuthTicketResponseHelper_Pre(DHookParam hParam)
 	CBaseClient pBaseClient = view_as<CBaseClient>(hParam.Get(1));
 
 	// invalid addresses cause crashes.
-	if (view_as<Address>(pBaseClient) == Address_Null)
+	if (view_as<Address>(view_as<int>(pBaseClient)) == Address_Null)
 		return MRES_Ignored;
 
 	char sName[128];
@@ -121,13 +121,13 @@ MRESReturn DTR_OnValidateAuthTicketResponseHelper_Pre(DHookParam hParam)
 	{
 		// not sure with windows.
 		case OS_Windows:
-			ReadMemoryString(view_as<Address>(pBaseClient) + view_as<Address>(g_iOff_CBaseClient_m_Name), sName, sizeof(sName));
+			ReadMemoryString(view_as<Address>(view_as<int>(pBaseClient)) + view_as<Address>(g_iOff_CBaseClient_m_Name), sName, sizeof(sName));
 
 		case OS_Linux:
 		{
 			pBaseClient.GetClientName(sName, sizeof(sName));
 			if (sName[0] == '\0')
-				ReadMemoryString(view_as<Address>(pBaseClient) + view_as<Address>(g_iOff_CBaseClient_m_Name), sName, sizeof(sName));
+				ReadMemoryString(view_as<Address>(view_as<int>(pBaseClient)) + view_as<Address>(g_iOff_CBaseClient_m_Name), sName, sizeof(sName));
 		}
 	}
 
