@@ -401,7 +401,7 @@ methodmap GameDataWrapper < GameData {
      * 
      * @error                   Plugin failed if the dynamic hook setup section is missing, or failed to enable the dynamic hook.
     */
-    public DynamicHook CreateDynamicHookOrFailEx(   const char[] name,
+    public void CreateDynamicHookOrFailEx(   const char[] name,
                                                     HookType type,
                                                     int entity = -1,
                                                     Address pAdr = Address_Null,
