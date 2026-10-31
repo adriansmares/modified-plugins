@@ -58,9 +58,20 @@ public void OnPluginStart()
 	{
 		do
 		{
-			kv.GetSectionName(szInputName, sizeof(szEntityName));
-			kv.GetString("entity_name", szEntityName, sizeof(szEntityName));
-			g_hMapEntityList.SetString(szEntityName, szInputName);
+			kv.GetSectionName(szInputName, sizeof(szInputName));
+
+			// A section lists several entities under the same key, so read every key rather than the first match.
+			if (kv.GotoFirstSubKey(false))
+			{
+				do
+				{
+					kv.GetString(NULL_STRING, szEntityName, sizeof(szEntityName));
+					g_hMapEntityList.SetString(szEntityName, szInputName);
+				}
+				while (kv.GotoNextKey(false));
+
+				kv.GoBack();
+			}
 		}
 		while (kv.GotoNextKey());
 	}
