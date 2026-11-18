@@ -77,6 +77,14 @@ public void OnPluginStart()
 	}
 
 	delete kv;
+
+	// Late load: hook the entities that already exist. OnEntityCreated hooks the rest.
+	int entity = -1;
+	while ((entity = FindEntityByClassname(entity, "*")) != -1)
+	{
+		GetEntityClassname(entity, szEntityName, sizeof(szEntityName));
+		HookIfListed(entity, szEntityName);
+	}
 }
 
 public void OnPluginEnd()
@@ -85,40 +93,17 @@ public void OnPluginEnd()
 	if (g_hMapEntityList) delete g_hMapEntityList;
 }
 
-// currently the entities related to this bug is created before the map start.
-// use OnMapStart to save some cycles.
-// let's just finish this huge cycle before we play. :D
-public void OnMapStart()
-{
-	int entity = -1;
-	char szEntityName[64];
-	while ((entity = FindEntityByClassname(entity, "*")) != -1)
-	{
-		GetEntityClassname(entity, szEntityName, sizeof(szEntityName));
-		if (g_hMapEntityList.ContainsKey(szEntityName))
-			g_hHook_AcceptInput.HookEntity(Hook_Pre, entity, DHook_CBaseEntity_AcceptInput);
-	}
-}
-
-/*
-// HACKHACK: This is too resource consuming. Any better way to hook entity?
+// Hooking only at map start is not enough: a round restart recreates the map's entities, which then stay unhooked.
 public void OnEntityCreated(int entity, const char[] classname)
 {
-	for (int i = 0; i < g_hMapEntityList.Size; i++)
-	{
-		static char szEntityName[64];
-		static char number[64];
-		Format(number, sizeof(number), "HookEntity%d", i + 1);
-		g_hMapEntityList.GetString(number, szEntityName, sizeof(szEntityName));
-
-		if (StrEqual(classname, szEntityName))
-		{
-			g_hHook_AcceptInput.HookEntity(Hook_Pre, entity, DHook_CBaseEntity_AcceptInput);
-			break;
-		}
-	}
+	HookIfListed(entity, classname);
 }
-*/
+
+void HookIfListed(int entity, const char[] classname)
+{
+	if (g_hMapEntityList.ContainsKey(classname))
+		g_hHook_AcceptInput.HookEntity(Hook_Pre, entity, DHook_CBaseEntity_AcceptInput);
+}
 
 MRESReturn DHook_CBaseEntity_AcceptInput(int pThis, DHookReturn hReturn, DHookParam hParams)
 {
